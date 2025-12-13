@@ -1,0 +1,32 @@
+#pragma once
+
+#include <cstddef>
+#include <cstdint>
+
+#ifndef DEVICE_ADV_UPDATE_PERIOD_MS
+#define DEVICE_ADV_UPDATE_PERIOD_MS 4000
+#endif
+
+#ifndef DEVICE_CHAR_UPDATE_PERIOD_MS
+#define DEVICE_CHAR_UPDATE_PERIOD_MS 2000
+#endif
+
+#ifndef BLE_CONNECT_ATTEMPT_COUNT
+#define BLE_CONNECT_ATTEMPT_COUNT 3
+#endif
+
+#ifndef NIMBLE_MAX_CONNECTIONS
+#define NIMBLE_MAX_CONNECTIONS 3
+#endif
+
+#ifndef DEVICE_CONNECT_TIMEOUT_MS
+#define DEVICE_CONNECT_TIMEOUT_MS 2000
+#endif
+
+#ifndef DEVICE_HISTORY_QUERY_SIZE
+#define DEVICE_HISTORY_QUERY_SIZE 96
+#endif
+
+#ifndef DEVICE_NUM
+#define DEVICE_NUM 8
+#endif
