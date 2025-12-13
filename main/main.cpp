@@ -12,8 +12,9 @@
 #include "esp_chip_info.h"
 #include "esp_flash.h"
 #include "esp_system.h"
+#include "esp_mac.h"
 
-void app_main(void)
+extern "C" void app_main(void)
 {
     printf("Hello world!\n");
 
