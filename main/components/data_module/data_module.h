@@ -1,12 +1,30 @@
+#pragma once
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
+#include <vector>
+#include "EnvironmentalSensor.h"
 
-typedef struct {
-    float temperature;
-    float humidity;
-    int heart_rate;
-} SensorData_t;
+namespace DataModule {
 
+using namespace EnvironmentalSensor;
+
+struct EnvironmentalData {
+    TemperatureSample temperature;
+    HumiditySample    humidity;
+    PressureSample    pressure;
+    CO2Sample         co2;
+};
+
+// Очередь для входящих данных
 extern QueueHandle_t dataQueue;
 
-void data_module_init(void);
+// API модуля
+void init(QueueHandle_t queue);
+void task(void *pvParameters);
+
+// Сохранение и загрузка
+bool save_to_flash(const std::vector<EnvironmentalData>& data);
+bool load_from_flash(std::vector<EnvironmentalData>& data);
+
+} // namespace DataModule

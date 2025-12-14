@@ -3,39 +3,31 @@
 
 extern "C" void app_main(void)
 {
-    data_module_init();
-    // printf("Hello world!\n");
+    dataQueue = xQueueCreate(DATA_QUEUE_LENGTH, sizeof(EnvironmentalData));
+    if (!dataQueue) {
+        printf("[Main] error creating xQueue\n");
+        return;
+    }
+    DataModule::init(dataQueue);
 
-    // /* Print chip information */
-    // esp_chip_info_t chip_info;
-    // uint32_t flash_size;
-    // esp_chip_info(&chip_info);
-    // printf("This is %s chip with %d CPU core(s), %s%s%s%s, ",
-    //        CONFIG_IDF_TARGET,
-    //        chip_info.cores,
-    //        (chip_info.features & CHIP_FEATURE_WIFI_BGN) ? "WiFi/" : "",
-    //        (chip_info.features & CHIP_FEATURE_BT) ? "BT" : "",
-    //        (chip_info.features & CHIP_FEATURE_BLE) ? "BLE" : "",
-    //        (chip_info.features & CHIP_FEATURE_IEEE802154) ? ", 802.15.4 (Zigbee/Thread)" : "");
+    
+    xTaskCreate(DataModule::task, "DataTask", 8192, nullptr, 5, nullptr);// SIMULATION
+    xTaskCreate([](void *pv){
+        EnvironmentalData data;
+        data.temperature.flags.set_source(Source::BLE);
+        data.humidity.flags.set_source(Source::BLE);
+        data.pressure.flags.set_source(Source::BLE);
+        data.co2.flags.set_source(Source::BLE);
 
-    // unsigned major_rev = chip_info.revision / 100;
-    // unsigned minor_rev = chip_info.revision % 100;
-    // printf("silicon revision v%d.%d, ", major_rev, minor_rev);
-    // if(esp_flash_get_size(NULL, &flash_size) != ESP_OK) {
-    //     printf("Get flash size failed");
-    //     return;
-    // }
+        for (;;) {
+            data.temperature.value = 20.0f + (rand() % 100) / 10.0f;
+            data.humidity.value    = 40.0f + (rand() % 600) / 10.0f;
+            data.pressure.value    = 1000.0f + (rand() % 200) / 10.0f;
+            data.co2.value         = 400.0f + (rand() % 300);
+            data.temperature.timestamp = xTaskGetTickCount();
 
-    // printf("%" PRIu32 "MB %s flash\n", flash_size / (uint32_t)(1024 * 1024),
-    //        (chip_info.features & CHIP_FEATURE_EMB_FLASH) ? "embedded" : "external");
-
-    // printf("Minimum free heap size: %" PRIu32 " bytes\n", esp_get_minimum_free_heap_size());
-
-    // for (int i = 10; i >= 0; i--) {
-    //     printf("Restarting in %d seconds...\n", i);
-    //     vTaskDelay(1000 / portTICK_PERIOD_MS);
-    // }
-    // printf("Restarting now.\n");
-    // fflush(stdout);
-    // esp_restart();
+            xQueueSend(dataQueue, &data, portMAX_DELAY);
+            vTaskDelay(pdMS_TO_TICKS(3000));
+        }
+    }, "MockSensor", 8192, nullptr, 4, nullptr);
 }
