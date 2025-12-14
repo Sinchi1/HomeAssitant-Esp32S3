@@ -3,7 +3,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include <vector>
-#include "EnvironmentalSensor.h"
+#include "EnvironmentalSensorData.h"
 
 namespace DataModule {
 

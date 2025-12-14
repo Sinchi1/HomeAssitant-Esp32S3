@@ -1,8 +1,14 @@
 
 #include "Main.h"
 
+using namespace DataModule;
+using namespace EnvironmentalSensor;
+
+QueueHandle_t DataModule::dataQueue = nullptr;
+
 extern "C" void app_main(void)
 {
+    int DATA_QUEUE_LENGTH = 120;
     dataQueue = xQueueCreate(DATA_QUEUE_LENGTH, sizeof(EnvironmentalData));
     if (!dataQueue) {
         printf("[Main] error creating xQueue\n");
