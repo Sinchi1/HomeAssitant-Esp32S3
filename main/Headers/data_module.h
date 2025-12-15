@@ -2,6 +2,7 @@
 
 #include "EnvironmentalSensorData.h"
 #include "data_module.h"
+#include "esp_log.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -19,6 +20,8 @@
 namespace DataModule {
 
 using namespace EnvironmentalSensor;
+
+static const char* Data_Module_Tag = "Module";
 
 struct EnvironmentalData {
     TemperatureSample temperature;

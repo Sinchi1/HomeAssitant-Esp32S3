@@ -17,16 +17,16 @@ static void init_fs()
 
     esp_err_t ret = esp_vfs_spiffs_register(&conf);
     if (ret != ESP_OK)
-        printf("[SPIFFS] SPIFFS mounting error (%d)\n", ret);
+        ESP_LOGE(Data_Module_Tag,"[SPIFFS] SPIFFS mounting error (%d)\n", ret);
     else
-        printf("[SPIFFS] fs is ready.\n");
+        ESP_LOGI(Data_Module_Tag,"[SPIFFS] fs is ready.\n");
 }
 
 bool DataModule::save_to_flash(const std::vector<EnvironmentalData>& data)
 {
     FILE *f = fopen("/spiffs/env_data.json", "w");
     if (!f) {
-        printf("[DataModule] error opening file from flash\n");
+        ESP_LOGE(Data_Module_Tag,"[DataModule] error opening file from flash\n");
         return false;
     }
 
@@ -47,7 +47,7 @@ bool DataModule::save_to_flash(const std::vector<EnvironmentalData>& data)
     free(json_str);
     cJSON_Delete(root);
 
-    printf("[DataModule] data saved successfully (%zu entries)\n", data.size());
+    ESP_LOGI(Data_Module_Tag,"[DataModule] data saved successfully (%zu entries)\n", data.size());
     return true;
 }
 
@@ -55,7 +55,7 @@ bool DataModule::load_from_flash(std::vector<EnvironmentalData>& data)
 {
     FILE *f = fopen("/spiffs/env_data.json", "r");
     if (!f) {
-        printf("[DataModule] file not found (first boot?)\n");
+        ESP_LOGI(Data_Module_Tag,"[DataModule] file not found (first boot?)\n");
         return false;
     }
 
@@ -69,7 +69,7 @@ bool DataModule::load_from_flash(std::vector<EnvironmentalData>& data)
 
     cJSON *root = cJSON_Parse(buffer.data());
     if (!root) {
-        printf("[DataModule] json parse error\n");
+        ESP_LOGE(Data_Module_Tag,"[DataModule] json parse error\n");
         return false;
     }
 
@@ -86,7 +86,7 @@ bool DataModule::load_from_flash(std::vector<EnvironmentalData>& data)
     }
 
     cJSON_Delete(root);
-    printf("[DataModule]  Successfully loaded %d entries from flash storage\n", count);
+    ESP_LOGI(Data_Module_Tag,"[DataModule]  Successfully loaded %d entries from flash storage\n", count);
     return true;
 }
 
@@ -116,7 +116,7 @@ void DataModule::task(void *pvParameters)
         {
             s_storage.push_back(received);
 
-            printf("[DataModule] Got data: "
+            ESP_LOGI(Data_Module_Tag,"[DataModule] Got data: "
                    "T=%.2f°C, H=%.1f%%, P=%.1f, CO2=%.1f\n",
                    received.temperature.value,
                    received.humidity.value,
