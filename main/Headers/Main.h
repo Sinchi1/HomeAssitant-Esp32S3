@@ -7,3 +7,5 @@
 #include "esp_flash.h"
 #include "esp_system.h"
 #include "esp_mac.h"
+#include "data_module.h"
+#include "EnvironmentalSensorData.h"

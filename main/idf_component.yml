@@ -18,3 +18,4 @@ dependencies:
   h2zero/esp-nimble-cpp: '*'
   espressif/esp32_display_panel: ==1.*
   espressif/i2c_bus: '*'
+  espressif/cjson: ^1.7.19
