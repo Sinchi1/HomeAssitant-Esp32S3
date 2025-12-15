@@ -131,11 +131,6 @@ static NimBLEClient* connectToDevice(NimBLEAdvertisedDevice* advDevice){
     /** Check if we have a client we should reuse first **/
     if (NimBLEDevice::getCreatedClientCount())
     {
-        /**
-         *  Special case when we already know this device, we send false as the
-         *  second argument in connect() to prevent refreshing the service
-         * database. This saves considerable time and power.
-         */
         pClient = NimBLEDevice::getClientByPeerAddress(advDevice->getAddress());
         if (pClient)
         {
@@ -148,10 +143,6 @@ static NimBLEClient* connectToDevice(NimBLEAdvertisedDevice* advDevice){
             ESP_LOGD(TAG, "reconnected client");
         } else
         {
-            /**
-             *  We don't already have a client that knows this device,
-             *  check for a client that is disconnected that we can use.
-             */
             pClient = NimBLEDevice::getDisconnectedClient();
         }
     }
@@ -170,13 +161,6 @@ static NimBLEClient* connectToDevice(NimBLEAdvertisedDevice* advDevice){
         ESP_LOGD(TAG, "new client created");
 
         pClient->setClientCallbacks(&clientCallbacks, false);
-        /**
-         *  Set initial connection parameters:
-         *  These settings are safe for 3 clients to connect reliably, can go
-         * faster if you have less connections. Timeout should be a multiple of
-         * the interval, minimum is 100ms. Min interval: 12 * 1.25ms = 15, Max
-         * interval: 12 * 1.25ms = 15, 0 latency, 150 * 10ms = 1500ms timeout
-         */
         pClient->setConnectionParams(12, 12, 0, 150);
         pClient->setConnectTimeout(DEVICE_CONNECT_TIMEOUT_MS);
         if (!pClient->connect(advDevice))
