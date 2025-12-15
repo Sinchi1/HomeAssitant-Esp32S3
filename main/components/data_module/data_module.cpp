@@ -1,11 +1,3 @@
-#include <cstdio>
-#include <cstdlib>
-#include <vector>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/queue.h"
-#include "esp_spiffs.h"
-#include "cJSON.h"
 #include "data_module.h"
 
 using namespace EnvironmentalSensor;

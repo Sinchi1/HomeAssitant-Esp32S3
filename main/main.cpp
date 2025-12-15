@@ -15,8 +15,6 @@ extern "C" void app_main(void)
 
     DataModule::init(dataQueue);
 
-    
-
     ESP_LOGI(mainTag, "Starting BLE application");
 
     BLE& bleInstance = BLE::instance();
