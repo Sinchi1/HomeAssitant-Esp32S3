@@ -9,6 +9,7 @@
 #include "freertos/queue.h"
 #include "portmacro.h"
 
+#include "data_module.h"
 #include "Aggregator.h"
 #include "EnvironmentalSensorData.h"
 #include "settings.h"
@@ -99,5 +100,6 @@ public:
         static BLE instance;
         return instance;
     }
+    
     void init(SemaphoreHandle_t* radioMutex_);
 };

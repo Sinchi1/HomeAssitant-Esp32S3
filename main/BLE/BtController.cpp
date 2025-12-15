@@ -69,7 +69,7 @@ public:
 
                 const uint8_t* new_data = data; 
 
-                if (xQueueSend(g_sensor_queue, &new_data, 0) == pdTRUE) {
+                if (xQueueSend(DataModule::dataQueue, &new_data, 0) == pdTRUE) {
                 ESP_LOGI(TAG, "temp to ui %s", dev_name.c_str());
                 } else {
                     ESP_LOGW(TAG, "Failed to send to UI queue (full?)");
