@@ -28,9 +28,9 @@ extern "C" void app_main(void)
 
     bleInstance.init(&radioMutex);
 
+    xTaskCreate(DataModule::task, "DataTask", 8192, nullptr, 5, nullptr);// SIMULATION
 
     
-    // xTaskCreate(DataModule::task, "DataTask", 8192, nullptr, 5, nullptr);// SIMULATION
     // xTaskCreate([](void *pv){
     //     EnvironmentalData data;
     //     data.temperature.flags.set_source(Source::BLE);

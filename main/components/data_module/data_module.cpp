@@ -105,8 +105,10 @@ void DataModule::task(void *pvParameters)
 {
     if (s_data_queue == nullptr) {
         vTaskDelete(nullptr);
+        ESP_LOGI(Data_Module_Tag,"[DataModule] nam pizdec\n");
         return;
     }
+        ESP_LOGI(Data_Module_Tag,"[DataModule] task was successfully launched\n");
 
     EnvironmentalData received{};
 
@@ -124,7 +126,7 @@ void DataModule::task(void *pvParameters)
                    received.co2.value);
             
 
-            if (s_storage.size() % 10 == 0)
+            if (s_storage.size() == 0)
                 save_to_flash(s_storage); //save every 10 records
 
             /* ------------------------------------------------------------------
