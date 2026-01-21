@@ -1,13 +1,10 @@
 #pragma once
 
 #include "EnvironmentalSensorData.h"
-#include "data_module.h"
 #include "esp_log.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "freertos/queue.h"
-#include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 
 #include "esp_spiffs.h"
@@ -16,6 +13,17 @@
 #include <cstdio>
 #include <cstdlib>
 #include <vector>
+#include <ctime>
+
+#define IDX_BATT      2
+#define IDX_TEMPL     4
+#define IDX_TEMPH     5
+#define IDX_HUML      7
+#define IDX_HUMH      8
+#define IDX_PRESSUREL 10
+#define IDX_PRESSUREH 12
+#define IDX_CO2L      14
+#define IDX_CO2H      15
 
 namespace DataModule {
 

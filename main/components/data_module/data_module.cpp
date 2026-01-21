@@ -1,9 +1,11 @@
 #include "data_module.h"
+#include "settings.h"
 
 using namespace EnvironmentalSensor;
 using namespace DataModule;
 
-static QueueHandle_t s_data_queue = nullptr;
+QueueHandle_t DataModule::dataQueue = nullptr;
+
 static std::vector<EnvironmentalData> s_storage; 
 
 static void init_fs()
@@ -95,7 +97,7 @@ void DataModule::init(QueueHandle_t queue)
     if (!queue) {
         return;
     }
-    s_data_queue = queue;
+    dataQueue = queue;
 
     init_fs();
     load_from_flash(s_storage);
@@ -103,19 +105,45 @@ void DataModule::init(QueueHandle_t queue)
 
 void DataModule::task(void *pvParameters)
 {
-    if (s_data_queue == nullptr) {
+    if (dataQueue == nullptr) {
         vTaskDelete(nullptr);
-        ESP_LOGI(Data_Module_Tag,"[DataModule] nam pizdec\n");
+        ESP_LOGI(Data_Module_Tag,"[DataModule] queue not set\n");
         return;
     }
-        ESP_LOGI(Data_Module_Tag,"[DataModule] task was successfully launched\n");
+    ESP_LOGI(Data_Module_Tag,"[DataModule] task launched\n");
 
+    const uint8_t* received_ptr = nullptr;
     EnvironmentalData received{};
 
     for (;;)
     {
-        if (xQueueReceive(s_data_queue, &received, portMAX_DELAY))
+        if (xQueueReceive(dataQueue, &received_ptr, portMAX_DELAY))
         {
+            if (!received_ptr) continue;
+            
+            uint8_t buf[16];
+            memcpy(buf, received_ptr, 16);
+
+            received.temperature.value =
+                (int16_t(buf[IDX_TEMPH]) << 8 | buf[IDX_TEMPL]) / 100.0f;
+
+            received.humidity.value =
+                (uint16_t(buf[IDX_HUMH]) << 8 | buf[IDX_HUML]) / 100.0f;
+
+            received.pressure.value =
+                (uint32_t(buf[IDX_PRESSUREH]) << 16 |
+                 uint32_t(buf[IDX_PRESSUREL+1]) << 8 |
+                 buf[IDX_PRESSUREL]);
+
+            received.co2.value =
+                (uint16_t(buf[IDX_CO2H]) << 8 | buf[IDX_CO2L]);
+
+            time_t t = time(NULL);
+            received.temperature.timestamp = (uint32_t)t;
+            received.humidity.timestamp = (uint32_t)t;
+            received.pressure.timestamp = (uint32_t)t;
+            received.co2.timestamp = (uint32_t)t;
+
             s_storage.push_back(received);
 
             ESP_LOGI(Data_Module_Tag,"[DataModule] Got data: "
@@ -124,14 +152,9 @@ void DataModule::task(void *pvParameters)
                    received.humidity.value,
                    received.pressure.value,
                    received.co2.value);
-            
 
-            if (s_storage.size() == 0)
-                save_to_flash(s_storage); //save every 10 records
-
-            /* ------------------------------------------------------------------
-             there will be recomendation module integration
-             * ------------------------------------------------------------------ */
+            if (s_storage.size() % 10 == 0)
+                save_to_flash(s_storage);
         }
     }
 }
