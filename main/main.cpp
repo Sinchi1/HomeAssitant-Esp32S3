@@ -1,52 +1,62 @@
 
 #include "Main.h"
+#include "Ui.h"
+#include "nvs_flash.h"
+#include "i2c_bus.h"
+
 
 using namespace DataModule;
 using namespace EnvironmentalSensor;
 
 QueueHandle_t DataModule::dataQueue = nullptr;
 
+using namespace esp_panel::drivers;
+using namespace esp_panel::board;
+
+#define I2C_NUM I2C_NUM_0
+#define I2C_MASTER_SDA_IO GPIO_NUM_15 /*!< gpio number for I2C master clock */
+#define I2C_MASTER_SCL_IO GPIO_NUM_16 /*!< gpio number for I2C master data  */
+#define I2C_MASTER_FREQ_HZ 100000     /*!< I2C master clock frequency */
+
 extern "C" void app_main(void)
 {
-    int DATA_QUEUE_LENGTH = 120;
-    dataQueue = xQueueCreate(DATA_QUEUE_LENGTH, sizeof(EnvironmentalData));
+   i2c_config_t conf = {
+        .mode = I2C_MODE_MASTER,
+        .sda_io_num = I2C_MASTER_SDA_IO,
+        .scl_io_num = I2C_MASTER_SCL_IO,
+        .sda_pullup_en = GPIO_PULLUP_ENABLE,
+        .scl_pullup_en = GPIO_PULLUP_ENABLE,
+        .master =
+            {
+                .clk_speed = I2C_MASTER_FREQ_HZ,
+            },
+    };
 
-    assert(dataQueue != NULL);
+    // i2c_bus_handle_t i2c_bus = i2c_bus_create(I2C_NUM, &conf);
 
-    DataModule::init(dataQueue);
+    Board*      board     = new Board();
+    static bool connected = false;
 
-    ESP_LOGI(mainTag, "Starting BLE application");
-
-    BLE& bleInstance = BLE::instance();
-
-    radioMutex = xSemaphoreCreateMutex();
-
-    if (radioMutex == nullptr) {
-        ESP_LOGE(mainTag, "Failed to create radio mutex");
-        return;
+    esp_err_t ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
+    {
+        ESP_LOGE(TAG, "mktime failed");
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        ret = nvs_flash_init();
     }
+    ESP_ERROR_CHECK(ret);
+    assert(board);
 
-    bleInstance.init(&radioMutex);
+    ESP_UTILS_CHECK_FALSE_EXIT(board->init(), "Board init failed");
+    ESP_UTILS_CHECK_FALSE_EXIT(board->begin(), "Board begin failed");
+    ESP_UTILS_CHECK_FALSE_EXIT(lvgl_port_init(board->getLCD(), board->getTouch()),
+                               "LVGL init failed");
+    lv_disp_t*  dispp = lv_disp_get_default();
+    lv_theme_t* theme =
+    lv_theme_default_init(dispp, lv_palette_main(LV_PALETTE_BLUE),
+                              lv_palette_main(LV_PALETTE_RED), true, LV_FONT_DEFAULT);
+    // lv_disp_set_theme(dispp, theme);
 
-    xTaskCreate(DataModule::task, "DataTask", 8192, nullptr, 5, nullptr);// SIMULATION
+    UI_ESP& ui_esp = UI_ESP::instance();
 
-    
-    // xTaskCreate([](void *pv){
-    //     EnvironmentalData data;
-    //     data.temperature.flags.set_source(Source::BLE);
-    //     data.humidity.flags.set_source(Source::BLE);
-    //     data.pressure.flags.set_source(Source::BLE);
-    //     data.co2.flags.set_source(Source::BLE);
-
-    //     for (;;) {
-    //         data.temperature.value = 20.0f + (rand() % 100) / 10.0f;
-    //         data.humidity.value    = 40.0f + (rand() % 600) / 10.0f;
-    //         data.pressure.value    = 1000.0f + (rand() % 200) / 10.0f;
-    //         data.co2.value         = 400.0f + (rand() % 300);
-    //         data.temperature.timestamp = xTaskGetTickCount();
-
-    //         xQueueSend(dataQueue, &data, portMAX_DELAY);
-    //         vTaskDelay(pdMS_TO_TICKS(3000));
-    //     }
-    // }, "MockSensor", 8192, nullptr, 4, nullptr);
 }
