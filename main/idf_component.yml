@@ -14,7 +14,7 @@ dependencies:
   #   # `public` flag doesn't have an effect dependencies of the `main` component.
   #   # All dependencies of `main` are public by default.
   #   public: true
-  lvgl/lvgl: ^9.4.0
+  lvgl/lvgl: ^8.*
   h2zero/esp-nimble-cpp: '*'
   espressif/esp32_display_panel: ==1.*
   espressif/i2c_bus: '*'
